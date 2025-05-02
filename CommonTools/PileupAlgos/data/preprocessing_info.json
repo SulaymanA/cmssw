@@ -17,8 +17,6 @@
 	"PFCandFromPV",
 	"PFCandTrackHighPurity",
 	"PFCandQuality",
-	"PFPuppiW"
-,
 	"PFCandLostInnerHits",
 	"PFCandVtxAssQual",
 	"PFPuppiW"

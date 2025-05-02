@@ -192,9 +192,9 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   tensorflow::Tensor inputs (tensorflow::DT_FLOAT, { 1, (int)features["PFCandEta"].size(), n_feats_ });
   inputs.flat<float>().setZero();
   for (int j = 0; j < n_feats_; j++) {
-    std::cout << j << std::endl;
-    std::cout << "Size of input_names: " << indices.size() << std::endl;
-    std::cout << "Size of features: " << pfCol->size() << std::endl;
+    // std::cout << j << std::endl;
+    // std::cout << "Size of input_names: " << indices.size() << std::endl;
+    // std::cout << "Size of features: " << pfCol->size() << std::endl;
     for (int i = 0; i < (int)features["PFCandEta"].size(); i++) {
       inputs.tensor<float,3>()(0,i,j) = float(features[input_names_.at(j)].at(i)); //looks suboptimal; is there way of filling the tensor avoiding nested loops?
     }
@@ -245,7 +245,7 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 	abcweight = 0.0;
       }
       else{
-        std::cout << "This is the PFcounter: " << PFCounter << std::endl;  
+        //std::cout << "This is the PFcounter: " << PFCounter << std::endl;  
         abcweight = outputs.at(0).tensor<float,3>()(0, indices.at(PFCounter), n_feats_);
       }
       abcweight = (abcweight > 0.5) ? 1.0 : 0.0; //set a lower threshold to ABCNet weights? to be tested
