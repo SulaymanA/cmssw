@@ -85,6 +85,8 @@ std::tuple< std::unordered_map<std::string, std::vector<float>>, std::vector<flo
     fts["PFCandNumLayersHit"].push_back(aPF.trackerLayersWithMeasurement()); //f15
     fts["PFCandFromPV"].push_back(aPF.fromPV()); //f16
     fts["PFCandTrackHighPurity"].push_back(aPF.trackHighPurity()); //f17
+    fts["PFCandLostInnerHits"].push_back(aPF.lostInnerHits()); //f20
+    fts["PFCandVtxAssQual"].push_back(aPF.pvAssociationQuality()); //f21
     if (aPF.bestTrack()) {
       if ( isinf(aPF.dz()/aPF.dzError()) ) fts["PFCandDZSig"].push_back(999.0); else fts["PFCandDZSig"].push_back(aPF.dz()/aPF.dzError()); //f10
       if ( isinf(aPF.dxy()/aPF.dxyError()) ) fts["PFCandDXYSig"].push_back(999.0); else fts["PFCandDXYSig"].push_back(aPF.dxy()/aPF.dxyError()); //f11
@@ -98,6 +100,7 @@ std::tuple< std::unordered_map<std::string, std::vector<float>>, std::vector<flo
       fts["PFCandNormChi2"].push_back(999.0);
       fts["PFCandQuality"].push_back(0.0);
     }
+    fts["PFPuppiW"].push_back(aPF.puppiWeight()); //f19
     if (aPF.pdgId() == 130 || aPF.pdgId() == 1) fts["PFCandHCalFrac"].push_back(aPF.hcalFraction()); else if (aPF.isIsolatedChargedHadron()) fts["PFCandHCalFrac"].push_back(aPF.rawHcalFraction()); else fts["PFCandHCalFrac"].push_back(0.0); //f12
 
     //make sure you don't store more than n_pf_cands (4000 in Run2), as the network is expecting exactly n_pf_cands. If you have less, 0-pad later, if you have more, cut them away now

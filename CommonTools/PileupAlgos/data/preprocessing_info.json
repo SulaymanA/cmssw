@@ -14,13 +14,14 @@
 	"PFCandDXYSig",
 	"PFCandHCalFrac",
 	"PFCandNormChi2",
-	"PFCandNumHits",
-	"PFCandNumLayersHit",
 	"PFCandFromPV",
 	"PFCandTrackHighPurity",
 	"PFCandQuality",
 	"PFPuppiW"
-
+,
+	"PFCandLostInnerHits",
+	"PFCandVtxAssQual",
+	"PFPuppiW"
     ],
     "var_info": {
 	"PFCandEta": {
@@ -153,6 +154,27 @@
 	    "upper_bound": 5,
 	    "lower_bound": -5,
 	    "norm_factor": 5,
+	    "replace_nan_value": 0,
+	    "pad_value": 0
+	},
+	"PFCandLostInnerHits": {
+	    "upper_bound": 100000,
+	    "lower_bound": -10000,
+	    "norm_factor": 1,
+	    "replace_nan_value": 0,
+	    "pad_value": 0
+	},
+	"PFCandVtxAssQual": {
+	    "upper_bound": 7,
+	    "lower_bound": 0,
+	    "norm_factor": 7,
+	    "replace_nan_value": 0,
+	    "pad_value": 0
+	},
+	"PFPuppiW": {
+	    "upper_bound": 100000,
+	    "lower_bound": -100000,
+	    "norm_factor": 1,
 	    "replace_nan_value": 0,
 	    "pad_value": 0
 	}

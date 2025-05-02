@@ -248,7 +248,7 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
         std::cout << "This is the PFcounter: " << PFCounter << std::endl;  
         abcweight = outputs.at(0).tensor<float,3>()(0, indices.at(PFCounter), n_feats_);
       }
-      //abcweight = (abcweight > 0.01) ? abcweight : 0.0; //set a lower threshold to ABCNet weights? to be tested
+      abcweight = (abcweight > 0.5) ? 1.0 : 0.0; //set a lower threshold to ABCNet weights? to be tested
     }
     weights.push_back(abcweight);
     PFCounter++;
