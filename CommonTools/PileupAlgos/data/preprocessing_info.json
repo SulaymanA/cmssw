@@ -18,7 +18,9 @@
 	"PFCandNumLayersHit",
 	"PFCandFromPV",
 	"PFCandTrackHighPurity",
-	"PFCandQuality"
+	"PFCandQuality",
+	"PFPuppiW"
+
     ],
     "var_info": {
 	"PFCandEta": {

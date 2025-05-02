@@ -91,14 +91,14 @@ ABCNetProducer::~ABCNetProducer() {
 void ABCNetProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("candName", edm::InputTag("packedPFCandidates"));
-  desc.add<edm::FileInPath>("graph_path", edm::FileInPath("CommonTools/PileupAlgos/data/AttentionBasedPileupRejectionModel_Run2_KDTree_dyn0pad_test.pb"));
+  desc.add<edm::FileInPath>("graph_path", edm::FileInPath("CommonTools/PileupAlgos/data/graph.pb"));
   desc.add<edm::FileInPath>("preprocess_json", edm::FileInPath("CommonTools/PileupAlgos/data/preprocessing_info.json"));
   desc.add<std::string>("input_tensor_name_1", "input_1");
   desc.add<std::string>("input_tensor_name_2", "input_2");
   desc.add<std::string>("output_tensor_name", "Identity");
   desc.add<int>("n_pf_cands", 4000);
-  desc.add<int>("n_feats", 19);
-  desc.add<int>("n_knns", 20);
+  desc.add<int>("n_feats", 20);
+  desc.add<int>("n_knns", 10);
   desc.add<bool>("debug", false);
 
   descriptions.add("abc", desc);
@@ -177,6 +177,7 @@ void ABCNetProducer::preprocess(std::unordered_map<std::string, std::vector<floa
 
 void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
+  std::cout << "Running Producer" << std::endl;
   // Get PFCandidate Collection
   edm::Handle<reco::CandidateView> PFCandidates;
   iEvent.getByToken(tokenPFCandidates_, PFCandidates);
@@ -191,6 +192,9 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   tensorflow::Tensor inputs (tensorflow::DT_FLOAT, { 1, (int)features["PFCandEta"].size(), n_feats_ });
   inputs.flat<float>().setZero();
   for (int j = 0; j < n_feats_; j++) {
+    std::cout << j << std::endl;
+    std::cout << "Size of input_names: " << indices.size() << std::endl;
+    std::cout << "Size of features: " << pfCol->size() << std::endl;
     for (int i = 0; i < (int)features["PFCandEta"].size(); i++) {
       inputs.tensor<float,3>()(0,i,j) = float(features[input_names_.at(j)].at(i)); //looks suboptimal; is there way of filling the tensor avoiding nested loops?
     }
@@ -229,7 +233,7 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   std::vector<float> weights;
   
   int PFCounter = 0;
-  for(auto const& aPF : *pfCol) {
+    for(auto const& aPF : *pfCol) {
     const pat::PackedCandidate *lPack = dynamic_cast<const pat::PackedCandidate*>(&aPF);
     float abcweight = -1.;
     if(lPack == nullptr) { 
@@ -240,7 +244,10 @@ void ABCNetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       if (indices.at(PFCounter) >= (unsigned)n_pf_cands_) { //if the particle wasn't considered in evaluation, assign 0 weight
 	abcweight = 0.0;
       }
-      else abcweight = outputs.at(0).tensor<float,3>()(0, indices.at(PFCounter), n_feats_);
+      else{
+        std::cout << "This is the PFcounter: " << PFCounter << std::endl;  
+        abcweight = outputs.at(0).tensor<float,3>()(0, indices.at(PFCounter), n_feats_);
+      }
       //abcweight = (abcweight > 0.01) ? abcweight : 0.0; //set a lower threshold to ABCNet weights? to be tested
     }
     weights.push_back(abcweight);
