@@ -1,0 +1,4 @@
+root://cms-xrd-global.cern.ch//store/mc/Run3Winter22MiniAOD/TTToSemiLeptonic_TuneCP5_13p6TeV-powheg-pythia8/MINIAODSIM/FlatPU0to70_122X_mcRun3_2021_realistic_v9-v2/70000/3967752b-7b07-47a3-b390-9202848c98ba.root
+root://cms-xrd-global.cern.ch//store/mc/Run3Winter22MiniAOD/TTToSemiLeptonic_TuneCP5_13p6TeV-powheg-pythia8/MINIAODSIM/FlatPU0to70_122X_mcRun3_2021_realistic_v9-v2/70000/a61d4b3f-64b2-4579-8cb7-fb6d975dc18b.root
+root://cms-xrd-global.cern.ch//store/mc/Run3Winter22MiniAOD/TTToSemiLeptonic_TuneCP5_13p6TeV-powheg-pythia8/MINIAODSIM/FlatPU0to70_122X_mcRun3_2021_realistic_v9-v2/70000/2bd961ad-dcbb-46eb-a3dd-3e1349cfc595.root
+root://cms-xrd-global.cern.ch//store/mc/Run3Winter22MiniAOD/TTToSemiLeptonic_TuneCP5_13p6TeV-powheg-pythia8/MINIAODSIM/FlatPU0to70_122X_mcRun3_2021_realistic_v9-v2/70000/2718f9e4-761f-42e2-af01-dcce3a5aab2b.root

@@ -5,6 +5,9 @@ from PhysicsTools.PatAlgos.tools.ConfigToolBase import *
 from CommonTools.ParticleFlow.pfCHS_cff import pfCHS
 
 from CommonTools.PileupAlgos.softKiller_cfi import softKiller
+from CommonTools.PileupAlgos.ABCNet_cff import abc
+
+from RecoMET.METProducers.pfMet_cfi import pfMet
 
 from RecoJets.JetProducers.PFJetParameters_cfi         import PFJetParameters
 from RecoJets.JetProducers.GenJetParameters_cfi        import GenJetParameters
@@ -210,6 +213,58 @@ class RecoJetAdder(object):
     task = getPatAlgosToolsTask(proc)
     addToProcessAndTask(label, module, proc, task)
 
+  def _addABCNetMET(self, proc, pfCand):
+    """
+    Schedule the ABCNet-weighted PF MET and its NanoAOD table. Called from the
+    first ABC jet collection that gets built; subsequent ones are no-ops.
+    """
+    if hasattr(proc, "pfMetABC"):
+      return
+    self.addProcessAndTask(proc, "pfMetABC", pfMet.clone(
+        src         = pfCand,
+        applyWeight = True,
+        srcWeights  = cms.InputTag("abc"),
+        alias       = "ABCMET",
+      )
+    )
+    #
+    # SimpleMETFlatTableProducer (View<reco::MET>) rather than the generic
+    # Candidate one, so that sumEt() resolves on the static type.
+    #
+    proc.pfMetABCTable = cms.EDProducer("SimpleMETFlatTableProducer",
+      src       = cms.InputTag("pfMetABC"),
+      name      = cms.string("ABCMET"),
+      doc       = cms.string("PF MET computed with ABCNet-weighted PF candidates"),
+      singleton = cms.bool(True),
+      extension = cms.bool(False),
+      variables = cms.PSet(
+        pt = cms.PSet(
+          expr      = cms.string("pt"),
+          type      = cms.string("float"),
+          doc       = cms.string("raw ABC PF MET pt"),
+          precision = cms.int32(10),
+        ),
+        phi = cms.PSet(
+          expr      = cms.string("phi"),
+          type      = cms.string("float"),
+          doc       = cms.string("raw ABC PF MET phi"),
+          precision = cms.int32(10),
+        ),
+        sumEt = cms.PSet(
+          expr      = cms.string("sumEt"),
+          type      = cms.string("float"),
+          doc       = cms.string("raw ABC PF scalar sum of Et"),
+          precision = cms.int32(10),
+        ),
+      )
+    )
+    #
+    # CMSSW >= 14 keeps the MET tables in a cms.Task, not the cms.Sequence
+    # ("metTables") that this block targeted in the Run 2 setup.
+    #
+    if hasattr(proc, "metTablesTask"):
+      proc.metTablesTask.add(proc.pfMetABCTable)
+
   def addRecoJetCollection(self,
     proc,
     jet,
@@ -279,7 +334,15 @@ class RecoJetAdder(object):
         # Skip if no PU Method or CS specified
         #
         if recoJetInfo.jetPUMethod in [ "", "cs" ]:
-          pass
+          #
+          # ABC jets carry no PU method in their name (the trailing "abc" is not
+          # matched by jetRegex), so they land here. Schedule the ABCNetProducer,
+          # which writes an edm::ValueMap<float> of per-candidate ABCNet weights
+          # under the label "abc". Both ak4pfabc and ak8pfabc consume the same
+          # ValueMap, so only add it once.
+          #
+          if "abc" in jetLower and not hasattr(proc, "abc"):
+            self.addProcessAndTask(proc, "abc", abc.clone())
         #
         # CHS
         #
@@ -342,6 +405,19 @@ class RecoJetAdder(object):
             src = pfCand,
           )
         )
+        #
+        # ABCNet: cluster the unmodified packedPFCandidates, weighting each
+        # candidate by its ABCNet weight. jetAlgorithm and rParam are set from
+        # recoJetInfo just below, so ak4pfabc and ak8pfabc share this branch.
+        #
+        elif "abc" in jetLower:
+          self.addProcessAndTask(proc, jetCollection, ak4PFJets.clone(
+              src         = pfCand, # 'packedPFCandidates' for ABC jets
+              applyWeight = True,
+              srcWeights  = cms.InputTag("abc"),
+            )
+          )
+          self._addABCNetMET(proc, pfCand)
         else:
           self.addProcessAndTask(proc, jetCollection, ak4PFJets.clone(
             src = pfCand,
@@ -367,6 +443,12 @@ class RecoJetAdder(object):
       #
       # Jet correction
       #
+      # No JEC payload has been derived for ABCNet-weighted jets, so leave them
+      # uncorrected rather than applying the CHS/PUPPI levels.
+      #
+      if "abc" in jetLower:
+        JETCorrLevels = []
+
       if recoJetInfo.jetPUMethod == "puppi":
         jetCorrLabel = "Puppi"
       elif recoJetInfo.jetPUMethod in [ "cs", "sk" ]:
@@ -408,6 +490,11 @@ class RecoJetAdder(object):
       #
       if recoJetInfo.jetPUMethod == "puppi":
         getattr(proc, "patJetFlavourAssociation{}{}".format(jetUpper,postfix)).weights = cms.InputTag(pfCandWeight)
+      #
+      # Need to set this explicitly for ABC jets
+      #
+      if "abc" in jetLower:
+        getattr(proc, "patJetFlavourAssociation{}{}".format(jetUpper,postfix)).weights = cms.InputTag("abc")
 
       getJetMCFlavour = not recoJetInfo.doCalo and recoJetInfo.jetPUMethod != "cs"
       if not self.runOnMC: #Remove modules for Gen-level object matching

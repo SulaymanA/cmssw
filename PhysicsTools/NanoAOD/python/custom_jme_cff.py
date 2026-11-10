@@ -85,6 +85,20 @@ config_recojets = [
     "genJetsCollection": "AK8GenJetsNoNu", # Setup in AddNewAK8GenJetsForJEC() function
     "minPtFastjet" : 0.,
   },
+  {
+    "jet" : "ak4pfabc",
+    "enabled" : True,
+    "inputCollection" : "",
+    "genJetsCollection": "AK4GenJetsNoNu",# Setup in ConfigureAK4GenJets() function
+    "minPtFastjet" : 8., #for ABCNet studies
+  },
+  {
+    "jet" : "ak8pfabc",
+    "enabled" : True,
+    "inputCollection" : "",
+    "genJetsCollection": "AK8GenJetsNoNu", # Setup in AddNewAK8GenJetsForJEC() function
+    "minPtFastjet" : 150., #for ABCNet studies
+  },
 ]
 config_recojets = list(filter(lambda k: k['enabled'], config_recojets))
 #
@@ -105,6 +119,16 @@ nanoInfo_recojets = {
     "name"  : "FatJetPF",
     "doc"   : "AK8 PF jets",
     "ptcut" : "",
+  },
+  "ak4pfabc" : {
+    "name"  : "JetABC",
+    "doc"   : "AK4 PF ABC",
+    "ptcut" : 8, # same as minPtFastjet in config_recojets
+  },
+  "ak8pfabc" : {
+    "name"  : "FatJetABC",
+    "doc"   : "AK8 PF ABC",
+    "ptcut" : 150, # same as minPtFastjet in config_recojets
   },
 }
 
@@ -455,6 +479,12 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
       payload = payload,
     )
   )
+  #
+  # ABC jets are left uncorrected: no JEC payload has been derived for
+  # ABCNet-weighted jets, so applying the CHS/PUPPI levels would be meaningless.
+  #
+  if "ABC" in jetName:
+    getattr(proc, jetCorrFactors).levels = ()
 
   #
   # Update jets

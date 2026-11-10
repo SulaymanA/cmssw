@@ -1,0 +1,190 @@
+{
+    "input_names": [
+        "PFCandLogPt",
+        "PFCandEta",
+        "PFCandPhi",
+        "PFCandMass",
+        "PFCandCharge",
+        "PFCandD0",
+        "PFCandLogD0Err",
+        "PFCandDz",
+        "PFCandLogDzErr",
+        "PFCandLogTrkPt",
+        "PFCandTrkEta",
+        "PFCandTrkPhi",
+        "PFCandLogTrkP",
+        "PFCandTrkChi2",
+        "PFCandPvAssocQuality",
+        "PFCandTrkHighPurity",
+        "PFCandLostInnerHits",
+        "PFCandTrkQuality",
+        "PFCandIsHadron",
+        "PFCandIsElectron",
+        "PFCandIsNeutralHadron",
+        "PFCandIsMuon",
+        "PFCandIsPhoton"
+    ],
+    "var_info": {
+        "PFCandLogPt": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandEta": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandPhi": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandMass": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandCharge": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandD0": {
+            "upper_bound": 40,
+            "lower_bound": -40,
+            "norm_factor": 40,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandLogD0Err": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandDz": {
+            "upper_bound": 40,
+            "lower_bound": -40,
+            "norm_factor": 40,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandLogDzErr": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandLogTrkPt": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandTrkEta": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandTrkPhi": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandLogTrkP": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandTrkChi2": {
+            "upper_bound": 100,
+            "lower_bound": 0,
+            "norm_factor": 100,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandPvAssocQuality": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandTrkHighPurity": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandLostInnerHits": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandTrkQuality": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandIsHadron": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandIsElectron": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandIsNeutralHadron": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandIsMuon": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        },
+        "PFCandIsPhoton": {
+            "upper_bound": 100000,
+            "lower_bound": -100000,
+            "norm_factor": 1,
+            "replace_nan_value": -999,
+            "pad_value": 0
+        }
+    }
+}
