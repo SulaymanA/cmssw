@@ -1,7 +1,7 @@
 # JME custom NanoAOD with PUMA (ABCNet) jets and MET, on 2024 MC MiniAOD.
 #
-# Adds to the standard JME nano: JetABC (AK4) and FatJetABC (AK8) clustered from the ABCNet-weighted PF
-# candidates, and ABCMET. The model is the default in python/ABCNet_cff.py (MDMM); graph= selects another.
+# Adds to the standard JME nano: JetPUMA (AK4) and FatJetPUMA (AK8) clustered from the ABCNet-weighted PF
+# candidates, and PUMAMET. The model is the default in python/ABCNet_cff.py (MDMM); graph= selects another.
 # No PF candidates are stored: use runJMENano_PUMA_PFCands_cfg.py for those, with the per-candidate weights.
 #
 #   cmsRun runJMENano_PUMA_cfg.py inputFiles=<file:... or root://...> maxEvents=1000 out=nano.root \

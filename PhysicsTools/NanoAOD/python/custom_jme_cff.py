@@ -90,13 +90,16 @@ config_recojets = [
     "enabled" : True,
     "inputCollection" : "",
     "genJetsCollection": "AK4GenJetsNoNu",# Setup in ConfigureAK4GenJets() function
+    "bTagDiscriminators": bTagDiscriminatorsForAK4, # the AK4 Puppi taggers, see AddTaggersForABCJets()
     "minPtFastjet" : 8., #for ABCNet studies
   },
   {
     "jet" : "ak8pfabc",
     "enabled" : True,
     "inputCollection" : "",
-    "genJetsCollection": "AK8GenJetsNoNu", # Setup in AddNewAK8GenJetsForJEC() function
+    # slimmedGenJetsAK8, as for FatJet, so that genJetIdx and genJetAK8Idx index the GenJetAK8 table
+    "genJetsCollection": "slimmedGenJetsAK8",
+    # the AK8 taggers of the FatJet table are added in AddTaggersForABCJets()
     "minPtFastjet" : 150., #for ABCNet studies
   },
 ]
@@ -121,13 +124,13 @@ nanoInfo_recojets = {
     "ptcut" : "",
   },
   "ak4pfabc" : {
-    "name"  : "JetABC",
-    "doc"   : "AK4 PF ABC",
+    "name"  : "JetPUMA",
+    "doc"   : "AK4 PF PUMA (ABCNet-weighted)",
     "ptcut" : 8, # same as minPtFastjet in config_recojets
   },
   "ak8pfabc" : {
-    "name"  : "FatJetABC",
-    "doc"   : "AK8 PF ABC",
+    "name"  : "FatJetPUMA",
+    "doc"   : "AK8 PF PUMA (ABCNet-weighted)",
     "ptcut" : 150, # same as minPtFastjet in config_recojets
   },
 }
@@ -464,6 +467,49 @@ def AddNewPatJets(proc, recoJetInfo, runOnMC):
 
   return proc
 
+#
+# Per-candidate weights given to the taggers run on the ABC jets, in place of the PUPPI weights jetTools
+# sets up: the ABCNet combined weight (SWD * calibration), the one the ABC jets are clustered with. Unlike
+# the PUPPI weight it can exceed 1. None of the taggers was trained on ABC jets.
+#
+ABC_TAGGER_WEIGHTS = "abc"
+
+def DiscriminatorsInTable(table):
+  """
+  Every 'producer:output' discriminator a jet table reads through bDiscriminator(...)
+  """
+  import re
+  discriminators = set()
+  for name in table.variables.parameterNames_():
+    discriminators.update(re.findall(r"bDiscriminator\('([^']+)'\)", getattr(table.variables, name).expr.value()))
+  return sorted(discriminators)
+
+def AddTaggersForABCJets(proc, recoJetInfo, runOnMC):
+  """
+  Save on the ABC jets the tagger outputs of the corresponding Puppi jet table (Jet for AK4, FatJet for
+  AK8), computed for the ABC jets with ABC_TAGGER_WEIGHTS as the candidate weights. For AK8 also
+  genJetAK8Idx, as FatJet's.
+  """
+  jetName = recoJetInfo.jetUpper
+  isAK8 = jetName.startswith("AK8")
+  refTable = proc.fatJetTable if isAK8 else proc.jetPuppiTable
+  jetTable = getattr(proc, "jet{}Table".format(jetName))
+  for name in refTable.variables.parameterNames_():
+    var = getattr(refTable.variables, name)
+    if "bDiscriminator(" in var.expr.value() and not hasattr(jetTable.variables, name):
+      setattr(jetTable.variables, name, var.clone())
+
+  # tag-info producers of this collection: candidate weights from ABCNet, not PUPPI
+  for label, module in proc.producers_().items():
+    if label.endswith(jetName + "Final") and "TagInfos" in label:
+      for param in ("puppi_value_map", "weights"):
+        if hasattr(module, param):
+          setattr(module, param, cms.InputTag(ABC_TAGGER_WEIGHTS))
+
+  if isAK8 and runOnMC:
+    getattr(proc, "jet{}MCTable".format(jetName)).variables.genJetAK8Idx = proc.fatJetMCTable.variables.genJetAK8Idx.clone()
+  return proc
+
 def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTableDoc,
                 doPF, doCalo, ptcut, ptcutGenMatch, doPUIDVar=False, doQGL=False, doBTag=False, runOnMC=False):
   """
@@ -531,7 +577,8 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
 
   jetTableCutDefault = "" #Don't apply any cuts for the table.
 
-  jetTableDocDefault = jetTableDoc + " with JECs applied. Jets with pt >= {ptcut:.0f} GeV are stored.".format(ptcut=ptcut)
+  jecDoc = " without JECs (pt is the raw pt, rawFactor = 0)" if "ABC" in jetName else " with JECs applied"
+  jetTableDocDefault = jetTableDoc + jecDoc + ". Jets with pt >= {ptcut:.0f} GeV are stored.".format(ptcut=ptcut)
   if runOnMC:
     jetTableDocDefault += "For jets with pt < {ptcut:.0f} GeV, only those matched to gen jets are stored.".format(ptcut=ptcut)
 
@@ -550,6 +597,39 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
   getattr(proc,jetTableName).variables.pt.precision=12
   getattr(proc,jetTableName).variables.mass.precision=12
   getattr(proc,jetTableName).variables.rawFactor.precision=10
+
+  #
+  # ABC jets: the variables of the AK4 Puppi jet table that are not in PFJETVARS
+  #
+  if "ABC" in jetName:
+    jetTable = getattr(proc,jetTableName)
+    jetUserData = getattr(proc,srcJetsWithUserData)
+    jetTable.variables.chMultiplicity = Var("chargedMultiplicity()","uint8",doc="(ABCNet-weighted) Number of charged particles in the jet")
+    jetTable.variables.neMultiplicity = Var("neutralMultiplicity()","uint8",doc="(ABCNet-weighted) Number of neutral particles in the jet")
+    if jetName.startswith("AK4"):
+      # HF shower shape, as hfJetPuppiShowerShapeforNanoAOD
+      hfShowerShapeName = "hfJet{}ShowerShape".format(jetName)
+      setattr(proc, hfShowerShapeName, hfJetShowerShape.clone(jets=srcJets, vertices="offlineSlimmedPrimaryVertices"))
+      jetUserData.userFloats.hfsigmaEtaEta = cms.InputTag(hfShowerShapeName+':sigmaEtaEta')
+      jetUserData.userFloats.hfsigmaPhiPhi = cms.InputTag(hfShowerShapeName+':sigmaPhiPhi')
+      jetUserData.userInts.hfcentralEtaStripSize = cms.InputTag(hfShowerShapeName+':centralEtaStripSize')
+      jetUserData.userInts.hfadjacentEtaStripsSize = cms.InputTag(hfShowerShapeName+':adjacentEtaStripsSize')
+      jetTable.variables.hfsigmaEtaEta = Var("userFloat('hfsigmaEtaEta')",float,doc="sigmaEtaEta for HF jets (noise discriminating variable)",precision=10)
+      jetTable.variables.hfsigmaPhiPhi = Var("userFloat('hfsigmaPhiPhi')",float,doc="sigmaPhiPhi for HF jets (noise discriminating variable)",precision=10)
+      jetTable.variables.hfcentralEtaStripSize = Var("userInt('hfcentralEtaStripSize')", int, doc="eta size of the central tower strip in HF (noise discriminating variable) ")
+      jetTable.variables.hfadjacentEtaStripsSize = Var("userInt('hfadjacentEtaStripsSize')", int, doc="eta size of the strips next to the central tower strip in HF (noise discriminating variable) ")
+      # muon-subtracted raw pT, as basicJetsPuppiForMetForT1METNano; the ABC jets have no JEC, so every
+      # correction label is the uncorrected one
+      muonSubtrName = "muonSubtr{}".format(jetName)
+      setattr(proc, muonSubtrName, proc.basicJetsPuppiForMetForT1METNano.clone(
+          src = cms.InputTag(srcJets),
+          jetCorrLabel = cms.InputTag("Uncorrected"),
+          jetCorrLabelRes = cms.InputTag("Uncorrected"),
+          offsetCorrLabel = cms.InputTag(""),
+        )
+      )
+      jetUserData.userFloats.muonSubtrRawPt = cms.InputTag(muonSubtrName+":MuonSubtrRawPt")
+      jetTable.variables.muonSubtrFactor = Var("1-userFloat('muonSubtrRawPt')/(pt()*jecFactor('Uncorrected'))",float,doc="1-(muon-subtracted raw pt)/(raw pt)",precision=6)
 
   #
   # Save MC-only jet variables in table
@@ -578,6 +658,8 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
      getattr(proc,finalJetsForTable)
    )
   )
+  if "ABC" in jetName and jetName.startswith("AK4"):
+    getattr(proc,jetTaskName).add(getattr(proc,"hfJet{}ShowerShape".format(jetName)), getattr(proc,"muonSubtr{}".format(jetName)))
   proc.nanoTableTaskCommon.add(getattr(proc,jetTaskName))
 
   #
@@ -1451,9 +1533,13 @@ def PrepJMECustomNanoAOD(process):
   ###########################################################################
   for jetConfig in config_recojets:
     cfg = { k : v for k, v in jetConfig.items() if k != "enabled"}
+    if cfg["jet"] == "ak8pfabc":
+      cfg["bTagDiscriminators"] = DiscriminatorsInTable(process.fatJetTable)
 
     recoJetInfo = recoJA.addRecoJetCollection(process, **cfg)
     AddNewPatJets(process, recoJetInfo, runOnMC)
+    if cfg["jet"] in ("ak4pfabc", "ak8pfabc"):
+      AddTaggersForABCJets(process, recoJetInfo, runOnMC)
 
   ###########################################################################
   # Add jet tasks

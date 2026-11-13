@@ -1,4 +1,0 @@
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v3/100001/67db66dc-58f6-470a-92f8-5915390f1043.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v3/100001/9b977dd3-28f7-4c5d-b040-46cd3ac336e9.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v3/100001/dc849d6b-1e9f-44ed-9038-a90e19b9f986.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v3/100001/51ebb5d2-6471-4bfc-b4e2-79db7daf6909.root

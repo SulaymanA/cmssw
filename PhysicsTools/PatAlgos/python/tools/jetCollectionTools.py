@@ -224,7 +224,7 @@ class RecoJetAdder(object):
         src         = pfCand,
         applyWeight = True,
         srcWeights  = cms.InputTag("abc"),
-        alias       = "ABCMET",
+        alias       = "PUMAMET",
       )
     )
     #
@@ -233,27 +233,27 @@ class RecoJetAdder(object):
     #
     proc.pfMetABCTable = cms.EDProducer("SimpleMETFlatTableProducer",
       src       = cms.InputTag("pfMetABC"),
-      name      = cms.string("ABCMET"),
-      doc       = cms.string("PF MET computed with ABCNet-weighted PF candidates"),
+      name      = cms.string("PUMAMET"),
+      doc       = cms.string("PUMA MET: PF MET computed with ABCNet-weighted PF candidates"),
       singleton = cms.bool(True),
       extension = cms.bool(False),
       variables = cms.PSet(
         pt = cms.PSet(
           expr      = cms.string("pt"),
           type      = cms.string("float"),
-          doc       = cms.string("raw ABC PF MET pt"),
+          doc       = cms.string("raw PUMA PF MET pt"),
           precision = cms.int32(10),
         ),
         phi = cms.PSet(
           expr      = cms.string("phi"),
           type      = cms.string("float"),
-          doc       = cms.string("raw ABC PF MET phi"),
+          doc       = cms.string("raw PUMA PF MET phi"),
           precision = cms.int32(10),
         ),
         sumEt = cms.PSet(
           expr      = cms.string("sumEt"),
           type      = cms.string("float"),
-          doc       = cms.string("raw ABC PF scalar sum of Et"),
+          doc       = cms.string("raw PUMA PF scalar sum of Et"),
           precision = cms.int32(10),
         ),
       )

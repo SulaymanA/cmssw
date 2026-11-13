@@ -1,4 +1,0 @@
-root://cms-xrd-global.cern.ch//store/mc/Run3Winter24MiniAOD/VBFHToInvisible_M-125_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/133X_mcRun3_2024_realistic_v9-v3/50000/505e137e-1f67-4103-b733-a08d12fc50bb.root
-root://cms-xrd-global.cern.ch//store/mc/Run3Winter24MiniAOD/VBFHToInvisible_M-125_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/133X_mcRun3_2024_realistic_v9-v3/50000/30cd81e4-051d-4484-80f4-8c4bb3f4b09a.root
-root://cms-xrd-global.cern.ch//store/mc/Run3Winter24MiniAOD/VBFHToInvisible_M-125_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/133X_mcRun3_2024_realistic_v9-v3/50000/666f4a90-ab00-4679-91c0-c439562c203a.root
-root://cms-xrd-global.cern.ch//store/mc/Run3Winter24MiniAOD/VBFHToInvisible_M-125_TuneCP5_13p6TeV_powheg-pythia8/MINIAODSIM/133X_mcRun3_2024_realistic_v9-v3/50000/9cb4c765-76c0-4e05-a4d5-375c312cfb89.root

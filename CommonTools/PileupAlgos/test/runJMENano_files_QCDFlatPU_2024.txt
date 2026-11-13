@@ -1,4 +1,0 @@
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/MINIAODSIM/FlatPU0to120_150X_mcRun3_2024_realistic_v2-v2/2810000/50cc2328-b8cb-4f46-b1eb-6b0c20cc791c.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/MINIAODSIM/FlatPU0to120_150X_mcRun3_2024_realistic_v2-v2/2810000/65d70b74-9290-48d4-851d-0e30ab83ab84.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/MINIAODSIM/FlatPU0to120_150X_mcRun3_2024_realistic_v2-v2/2810000/99593e77-5aec-4587-9429-f6f122584b43.root
-root://cms-xrd-global.cern.ch//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/MINIAODSIM/FlatPU0to120_150X_mcRun3_2024_realistic_v2-v2/2810000/8170391e-946d-4d12-9ea7-fb67c15d7d00.root
