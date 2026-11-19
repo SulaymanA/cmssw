@@ -510,6 +510,96 @@ def AddTaggersForABCJets(proc, recoJetInfo, runOnMC):
     getattr(proc, "jet{}MCTable".format(jetName)).variables.genJetAK8Idx = proc.fatJetMCTable.variables.genJetAK8Idx.clone()
   return proc
 
+def AddSoftDropForABCJets(proc, recoJetInfo, runOnMC):
+  """
+  Soft-drop grooming and subjets for the ABC AK8 jets, as applySubstructure_cff.py does for the Puppi AK8
+  jets in MiniAOD (zcut 0.1, beta 0, R0 0.8), with the ABCNet combined weights in place of the Puppi ones
+  and no JEC. The groomed jets and their subjets are attached to the ABC fat jets under the label
+  'SoftDropPUMA' (msoftdrop, subJetIdx1/2 in SavePatJets), and the subjets are stored in the SubJetPUMA table.
+  Unlike MiniAOD there is no pt > 100 GeV, |y| < 2.4 preselection of the fat jets that are groomed.
+  Call before AddNewPatJets: it replaces recoJetInfo.patJetFinalCollection with the packed jets.
+  """
+  from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
+  from RecoJets.JetProducers.ak8PFJets_cfi import ak8PFJetsPuppiSoftDrop
+  jetName = recoJetInfo.jetUpper
+  fatJets = getattr(proc, "{}Collection".format(jetName))
+  softDrop = "{}SoftDrop".format(jetName)
+  setattr(proc, softDrop, ak8PFJetsPuppiSoftDrop.clone(
+      src = fatJets.src,
+      srcWeights = fatJets.srcWeights,
+    )
+  )
+  proc.nanoTableTaskCommon.add(getattr(proc, softDrop))
+
+  # PATify the groomed jets and the subjets, uncorrected like the ABC jets; MiniAOD inputs, as in
+  # RecoJetAdder (addJetCollection's defaults are the AOD ones, e.g. genParticles)
+  noJEC = ("AK8PFchs", [], "None")
+  miniAODInputs = dict(
+    pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    pfCandidates = cms.InputTag("packedPFCandidates"),
+    svSource = cms.InputTag("slimmedSecondaryVertices"),
+    muSource = cms.InputTag("slimmedMuons"),
+    elSource = cms.InputTag("slimmedElectrons"),
+    genParticles = cms.InputTag("prunedGenParticles"),
+  )
+  addJetCollection(proc,
+    labelName = softDrop,
+    jetSource = cms.InputTag(softDrop),
+    btagDiscriminators = ["None"],
+    genJetCollection = cms.InputTag("slimmedGenJetsAK8"),
+    jetCorrections = noJEC,
+    getJetMCFlavour = False,
+    **miniAODInputs
+  )
+  addJetCollection(proc,
+    labelName = softDrop + "Subjets",
+    jetSource = cms.InputTag(softDrop, "SubJets"),
+    algo = "ak",
+    rParam = 0.8,
+    btagDiscriminators = ["None"],
+    genJetCollection = cms.InputTag("slimmedGenJetsAK8SoftDropSubJets"),
+    jetCorrections = noJEC,
+    getJetMCFlavour = False,
+    **miniAODInputs
+  )
+  for label in (softDrop, softDrop + "Subjets"):
+    if not runOnMC:
+      getattr(proc, "patJets" + label).addGenJetMatch = False
+      getattr(proc, "patJets" + label).addGenPartonMatch = False
+
+  # link subjets to the groomed jets, then the groomed jets to the ABC fat jets
+  packedSoftDrop = softDrop + "Packed"
+  setattr(proc, packedSoftDrop, cms.EDProducer("BoostedJetMerger",
+      jetSrc = cms.InputTag("selectedPatJets" + softDrop),
+      subjetSrc = cms.InputTag("selectedPatJets" + softDrop + "Subjets"),
+    )
+  )
+  packedJets = "packedPatJets{}".format(jetName)
+  setattr(proc, packedJets, cms.EDProducer("JetSubstructurePacker",
+      jetSrc = cms.InputTag(recoJetInfo.patJetFinalCollection),
+      distMax = cms.double(0.8),
+      algoTags = cms.VInputTag(cms.InputTag(packedSoftDrop)),
+      algoLabels = cms.vstring("SoftDropPUMA"),
+      fixDaughters = cms.bool(False), # the ABC jets' daughters already are packedPFCandidates
+      packedPFCandidates = cms.InputTag("packedPFCandidates"),
+    )
+  )
+  proc.nanoTableTaskCommon.add(getattr(proc, packedSoftDrop), getattr(proc, packedJets))
+  recoJetInfo.patJetFinalCollection = packedJets
+
+  # subjet table: subJetIdx1/2 index it
+  proc.subJetPUMATable = simplePATJetFlatTableProducer.clone(
+    src = cms.InputTag(packedSoftDrop, "SubJets"),
+    name = cms.string("SubJetPUMA"),
+    doc = cms.string("soft-drop subjets of the FatJetPUMA jets (ABCNet-weighted candidates), without JECs"),
+    variables = cms.PSet(P4Vars,
+      area = Var("jetArea()", float, doc="jet catchment area", precision=10),
+    )
+  )
+  proc.subJetPUMATable.variables.pt.precision = 10
+  proc.nanoTableTaskCommon.add(proc.subJetPUMATable)
+  return proc
+
 def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTableDoc,
                 doPF, doCalo, ptcut, ptcutGenMatch, doPUIDVar=False, doQGL=False, doBTag=False, runOnMC=False):
   """
@@ -606,6 +696,11 @@ def SavePatJets(proc, jetName, payload, patJetFinalColl, jetTablePrefix, jetTabl
     jetUserData = getattr(proc,srcJetsWithUserData)
     jetTable.variables.chMultiplicity = Var("chargedMultiplicity()","uint8",doc="(ABCNet-weighted) Number of charged particles in the jet")
     jetTable.variables.neMultiplicity = Var("neutralMultiplicity()","uint8",doc="(ABCNet-weighted) Number of neutral particles in the jet")
+    if jetName.startswith("AK8"):
+      # soft drop from AddSoftDropForABCJets(); subjet indices refer to the SubJetPUMA table
+      jetTable.variables.msoftdrop = Var("?hasSubjets('SoftDropPUMA')?groomedMass('SoftDropPUMA'):-1",float,doc="soft drop mass with ABCNet weights, without JECs",precision=10)
+      jetTable.variables.subJetIdx1 = Var("?nSubjetCollections()>0 && subjets('SoftDropPUMA').size()>0?subjets('SoftDropPUMA')[0].key():-1", "int16", doc="index of first subjet (SubJetPUMA)")
+      jetTable.variables.subJetIdx2 = Var("?nSubjetCollections()>0 && subjets('SoftDropPUMA').size()>1?subjets('SoftDropPUMA')[1].key():-1", "int16", doc="index of second subjet (SubJetPUMA)")
     if jetName.startswith("AK4"):
       # HF shower shape, as hfJetPuppiShowerShapeforNanoAOD
       hfShowerShapeName = "hfJet{}ShowerShape".format(jetName)
@@ -1537,6 +1632,8 @@ def PrepJMECustomNanoAOD(process):
       cfg["bTagDiscriminators"] = DiscriminatorsInTable(process.fatJetTable)
 
     recoJetInfo = recoJA.addRecoJetCollection(process, **cfg)
+    if cfg["jet"] == "ak8pfabc":
+      AddSoftDropForABCJets(process, recoJetInfo, runOnMC)
     AddNewPatJets(process, recoJetInfo, runOnMC)
     if cfg["jet"] in ("ak4pfabc", "ak8pfabc"):
       AddTaggersForABCJets(process, recoJetInfo, runOnMC)
