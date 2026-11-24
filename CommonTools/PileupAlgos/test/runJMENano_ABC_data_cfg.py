@@ -99,8 +99,8 @@ process.schedule = cms.Schedule(process.nanoAOD_step,process.endjob_step,process
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#Setup FWK for multithreaded
-process.options.numberOfThreads = 4
+#Setup FWK for multithreaded: 1 thread by default (runJMENano_PUMA_cfg.py sets it from nThreads)
+process.options.numberOfThreads = 1
 process.options.numberOfStreams = 0
 
 # customisation of the process.

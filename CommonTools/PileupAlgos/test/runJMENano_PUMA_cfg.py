@@ -5,7 +5,9 @@
 # No PF candidates are stored: use runJMENano_PUMA_PFCands_cfg.py for those, with the per-candidate weights.
 #
 #   cmsRun runJMENano_PUMA_cfg.py inputFiles=<file:... or root://...> maxEvents=1000 out=nano.root \
-#       [data=True] [nThreads=4] [skip=0] [graph=CommonTools/PileupAlgos/data/<model>.pb]
+#       [data=True] [nThreads=1] [skip=0] [graph=CommonTools/PileupAlgos/data/<model>.pb]
+#
+# In batch jobs set nThreads equal to the CPUs requested (request_cpus in Condor).
 #
 # Built on the cmsDriver configs (--step NANO:@JME --era Run3_2024)
 #   MC:   runJMENano_ABC_cfg.py       --mc   --conditions auto:phase1_2024_realistic
@@ -22,7 +24,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 opts = VarParsing("analysis")
 opts.register("data", False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "run on data")
 opts.register("skip", 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "events to skip")
-opts.register("nThreads", 4, VarParsing.multiplicity.singleton, VarParsing.varType.int, "threads")
+opts.register("nThreads", 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, "threads (match request_cpus in batch jobs)")
 # own output name: VarParsing's outputFile would get _numEvent<N> appended
 opts.register("out", "nano.root", VarParsing.multiplicity.singleton, VarParsing.varType.string, "output file")
 opts.register("graph", "", VarParsing.multiplicity.singleton, VarParsing.varType.string,

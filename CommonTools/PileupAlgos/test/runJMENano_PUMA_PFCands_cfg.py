@@ -5,7 +5,7 @@
 # About 61 kB/event against 6-7 kB/event without the candidates (DY 2024 MC; a quarter of it the two weights).
 #
 #   cmsRun runJMENano_PUMA_PFCands_cfg.py inputFiles=<file:... or root://...> maxEvents=1000 out=nano.root \
-#       [nThreads=4] [skip=0] [graph=CommonTools/PileupAlgos/data/<model>.pb]
+#       [data=True] [nThreads=1] [skip=0] [graph=CommonTools/PileupAlgos/data/<model>.pb]
 import os
 import sys
 
